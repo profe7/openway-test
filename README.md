@@ -14,7 +14,7 @@ This project was written to test the Periplus shopping cart feature. The automat
 1. Added test more relevant to the shopping cart namely update cart, send as gift, continue shopping, and checkout.
 
 
-## Test steps
+## Test steps (Truncated for 1 test case, please refer to the essay document for all test steps)
 1. Open the Periplus website.
 2. Navigate to the login page.
 3. Login with valid credentials.
