@@ -1,9 +1,8 @@
 package org.openway.tests;
 
 import org.openway.base.BaseTest;
-import org.openway.pages.HomePage;
 import org.openway.pages.ShoppingCartPage;
-import org.openway.utils.SanitizePrice;
+import org.openway.utils.SanitizeNumbers;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -13,6 +12,10 @@ import java.util.List;
 public class CartFunctionalityTest extends BaseTest {
     private static final String SEARCH_QUERY = "How to Build a Car";
     private static final String SEARCH_QUERY_2 = "Formula 1";
+    private static final String CARD_STRING = "Card";
+    private static final String PERIPLUS_STRING = "Periplus Online Bookstore";
+    private static final String HOMEPAGE_TITLE = "Periplus Online Bookstore - Toko Buku Online murah, terbaik, terpercaya, lengkap dan besar buku lokal & Impor di Indonesia (Biggest - Trusted - Cheapest - Complete - Best Local & Imported Book Retail store - Bookshop)";
+
     private String ISBN_EXPECTED = "";
 
     @Test(description = "PRPL_SC_01 - Removal of a book from the shopping cart.", priority = 1)
@@ -55,24 +58,24 @@ public class CartFunctionalityTest extends BaseTest {
     public void testVerifyBookSubtotalInCartSingular() {
         shoppingCartPage = addBookFlow(SEARCH_QUERY);
         String priceText = shoppingCartPage.getBasket().getProductPrices().getFirst();
-        long price = SanitizePrice.sanitizePrice(priceText);
-        long subtotal = SanitizePrice.sanitizePrice(shoppingCartPage.getBasket().getSubtotal());
+        long price = SanitizeNumbers.sanitizeNumbers(priceText);
+        long subtotal = SanitizeNumbers.sanitizeNumbers(shoppingCartPage.getBasket().getSubtotal());
         Assert.assertEquals(subtotal, price);
 
         shoppingCartPage.getBasket().clickPlusButton();
 
         new WebDriverWait(driver, java.time.Duration.ofSeconds(5))
-            .until(_ -> SanitizePrice.sanitizePrice(shoppingCartPage.getBasket().getSubtotal()) == price * 2);
+            .until(_ -> SanitizeNumbers.sanitizeNumbers(shoppingCartPage.getBasket().getSubtotal()) == price * 2);
 
-        long newSubtotal = SanitizePrice.sanitizePrice(shoppingCartPage.getBasket().getSubtotal());
+        long newSubtotal = SanitizeNumbers.sanitizeNumbers(shoppingCartPage.getBasket().getSubtotal());
         Assert.assertEquals(newSubtotal, price * 2);
 
         shoppingCartPage.getBasket().clickMinusButton();
 
         new WebDriverWait(driver, java.time.Duration.ofSeconds(5))
-            .until(_ -> SanitizePrice.sanitizePrice(shoppingCartPage.getBasket().getSubtotal()) == price);
+            .until(_ -> SanitizeNumbers.sanitizeNumbers(shoppingCartPage.getBasket().getSubtotal()) == price);
 
-        long finalSubtotal = SanitizePrice.sanitizePrice(shoppingCartPage.getBasket().getSubtotal());
+        long finalSubtotal = SanitizeNumbers.sanitizeNumbers(shoppingCartPage.getBasket().getSubtotal());
         Assert.assertEquals(finalSubtotal, price);
     }
 
@@ -83,12 +86,51 @@ public class CartFunctionalityTest extends BaseTest {
 
         List<String> pricesText = shoppingCartPage.getBasket().getProductPrices();
         long totalPrice = pricesText.stream()
-            .mapToLong(SanitizePrice::sanitizePrice)
+            .mapToLong(SanitizeNumbers::sanitizeNumbers)
             .sum();
 
-        long subtotal = SanitizePrice.sanitizePrice(shoppingCartPage.getBasket().getSubtotal());
+        long subtotal = SanitizeNumbers.sanitizeNumbers(shoppingCartPage.getBasket().getSubtotal());
         Assert.assertEquals(subtotal, totalPrice);
     }
+
+    @Test(description = "PRPL_SC_06 - To update the cart.", priority = 6)
+    public void testUpdateCart() {
+        shoppingCartPage = addBookFlow(SEARCH_QUERY);
+        Long previousPoints = shoppingCartPage.getBasket().getPoints().getFirst();
+        shoppingCartPage.getBasket().clickPlusButton();
+        shoppingCartPage.getBasket().clickUpdateButton();
+        Long updatedPoints = shoppingCartPage.getBasket().getPoints().getFirst();
+        Assert.assertEquals(updatedPoints, previousPoints * 2);
+
+        shoppingCartPage.getBasket().clickMinusButton();
+        shoppingCartPage.getBasket().clickUpdateButton();
+        Long finalPoints = shoppingCartPage.getBasket().getPoints().getFirst();
+        Assert.assertEquals(finalPoints, previousPoints);
+    }
+
+    @Test(description = "PRPL_SC_07 - To send as gift from the cart.", priority = 7)
+    public void testSendAsGiftFromCart() {
+        shoppingCartPage = addBookFlow(SEARCH_QUERY);
+        sendAsGiftPage = shoppingCartPage.getBasket().clickSendAsGiftButton();
+        Assert.assertTrue(sendAsGiftPage.getCarousel().getCardText().contains(CARD_STRING));
+    }
+
+    @Test(description = "PRPL_SC_08 - To continue shopping from the cart.", priority = 8)
+    public void testContinueShoppingFromCart() {
+        shoppingCartPage = addBookFlow(SEARCH_QUERY);
+        homePage = shoppingCartPage.getBasket().clickContinueShoppingButton();
+        Assert.assertTrue(homePage.getTitle().contains(HOMEPAGE_TITLE));
+    }
+
+    @Test(description = "PRPL_SC_09 - To proceed to checkout from the cart.", priority = 9)
+    public void testProceedToCheckoutFromCart() {
+        shoppingCartPage = addBookFlow(SEARCH_QUERY);
+        checkoutPage = shoppingCartPage.getBasket().clickCheckoutButton();
+        Assert.assertTrue(checkoutPage.getCheckoutLogoTitle().contains(PERIPLUS_STRING));
+        driver.navigate().back();
+        shoppingCartPage = new ShoppingCartPage(driver);
+    }
+
 
     private ShoppingCartPage addBookFlow(String searchQuery) {
         homePage.getNavbar().typeSearch(searchQuery);

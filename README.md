@@ -10,6 +10,10 @@ This project was written to test the Periplus shopping cart feature. The automat
 4. Improved user journey tracking through DSL.
 5. Improved test cleanup by using AfterMethod
 
+## Rev 2.1 (30/05/2025)
+1. Added test more relevant to the shopping cart namely update cart, send as gift, continue shopping, and checkout.
+
+
 ## Test steps
 1. Open the Periplus website.
 2. Navigate to the login page.

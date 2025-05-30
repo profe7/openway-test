@@ -17,6 +17,8 @@ public abstract class BaseTest {
     protected static SearchPage searchPage;
     protected static ProductPage productPage;
     protected static ShoppingCartPage shoppingCartPage;
+    protected static SendAsGiftPage sendAsGiftPage;
+    protected static CheckoutPage checkoutPage;
     private static final Dotenv dotenv = Dotenv.load();
 
     private static final String BASE_URL = "https://www.periplus.com/";
@@ -51,10 +53,11 @@ public abstract class BaseTest {
     }
 
     private void removeBookFlow(ShoppingCartPage shoppingCartPage) {
+        homePage = homePage.getNavbar().clickHome();
+        shoppingCartPage = homePage.getNavbar().clickCart();
         shoppingCartPage.getBasket().clearCart();
         Assert.assertTrue(shoppingCartPage.getEmptyMessage()
                 .contains("Your shopping cart is empty"));
-        homePage = shoppingCartPage.getNavbar().clickHome();
     }
 
 }

@@ -1,9 +1,14 @@
 package org.openway.components.shoppingcartpage;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openway.components.base.BaseComponent;
+import org.openway.pages.CheckoutPage;
+import org.openway.pages.HomePage;
+import org.openway.pages.SendAsGiftPage;
+import org.openway.utils.SanitizeNumbers;
 
 import java.util.List;
 
@@ -19,6 +24,10 @@ public class BasketComponent extends BaseComponent {
     private static final By EMPTY_CART_MESSAGE = By.xpath("//div[contains(@class, 'content') and contains(text(), 'Your shopping cart is empty')]");
     private static final By QUANTITY_FIELD = By.cssSelector("input.input-number.text-center");
     private static final By ISBN = By.xpath(".//div[contains(@class, 'row') and (contains(text(), '978') or contains(text(), '979'))]");
+    private static final By UPDATE_BUTTON = By.cssSelector("#basket > div > div > div > div > div > div > div:nth-child(2) > div > div > div > div.col-lg-8.col-md-5.col-12 > div > div > input");
+    private static final By SEND_AS_GIFT_BUTTON = By.cssSelector("#basket > div > div > div > div > div > div > div:nth-child(2) > div > div > div > div.col-lg-8.col-md-5.col-12 > div > div > a:nth-child(3) > button");
+    private static final By CONTINUE_SHOPPING_BUTTON = By.cssSelector("#basket > div > div > div > div > div > div > div:nth-child(2) > div > div > div > div.col-lg-8.col-md-5.col-12 > div > div > a.btn.text-white");
+    private static final By CHECKOUT_BUTTON = By.xpath("//*[@id=\"basket\"]/div/div/div/div/div/div/div[2]/div/div/div/div[2]/div/div");
     
 
     public BasketComponent(WebElement root, WebDriver driver) {
@@ -34,6 +43,29 @@ public class BasketComponent extends BaseComponent {
     public void clickRemoveButton() {
         WebElement removeButton = findElement(REMOVE_BUTTON);
         click(removeButton);
+    }
+
+    public SendAsGiftPage clickSendAsGiftButton() {
+        WebElement sendAsGiftButton = findElement(SEND_AS_GIFT_BUTTON);
+        click(sendAsGiftButton);
+        return new SendAsGiftPage(driver);
+    }
+
+    public void clickUpdateButton() {
+        WebElement updateButton = findElement(UPDATE_BUTTON);
+        click(updateButton);
+    }
+
+    public HomePage clickContinueShoppingButton() {
+        WebElement continueShoppingButton = findElement(CONTINUE_SHOPPING_BUTTON);
+        click(continueShoppingButton);
+        return new HomePage(driver);
+    }
+
+    public CheckoutPage clickCheckoutButton() {
+        WebElement checkoutButton = findElement(CHECKOUT_BUTTON);
+        click(checkoutButton);
+        return new CheckoutPage(driver);
     }
 
     public void clearCart() {
@@ -93,7 +125,26 @@ public class BasketComponent extends BaseComponent {
                     return priceText;
                 })
                 .toList();
-        }
+    }
+
+    public List<Long> getPoints() {
+        return findElements(PRODUCT_ROW).stream()
+                .map(row -> {
+                    WebElement pointsElement;
+                    try {
+                        pointsElement = row.findElement(PRODUCT_PRICE);
+                    } catch (StaleElementReferenceException e) {
+                        pointsElement = row.findElement(PRODUCT_PRICE);
+                    }
+                    String pointsText = pointsElement.getText().trim();
+                    int orIndex = pointsText.indexOf("or");
+                    if (orIndex != -1) {
+                        pointsText = pointsText.substring(orIndex + 2).trim();
+                    }
+                    return SanitizeNumbers.sanitizeNumbers(pointsText);
+                })
+                .toList();
+    }
 
     public String getQuantity() {
         WebElement quantityField = findElement(QUANTITY_FIELD);
