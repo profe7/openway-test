@@ -3,6 +3,13 @@
 ## Periplus Automated Testing (Shopping Cart)
 This project was written to test the Periplus shopping cart feature. The automated test is performed using the Selenium Web Driver.
 
+## Rev. 2 (30/05/2025)
+1. Improved code reusability by moving to POM design pattern.
+2. Improved separation of concerns between test code and page logic.
+3. Improved book verification by checking both title and ISBN.
+4. Improved user journey tracking through DSL.
+5. Improved test cleanup by using AfterMethod
+
 ## Test steps
 1. Open the Periplus website.
 2. Navigate to the login page.

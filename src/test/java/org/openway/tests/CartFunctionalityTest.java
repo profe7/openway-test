@@ -13,14 +13,16 @@ import java.util.List;
 public class CartFunctionalityTest extends BaseTest {
     private static final String SEARCH_QUERY = "How to Build a Car";
     private static final String SEARCH_QUERY_2 = "Formula 1";
+    private String ISBN_EXPECTED = "";
 
     @Test(description = "PRPL_SC_01 - Removal of a book from the shopping cart.", priority = 1)
     public void testAddRemoveBookFromCart() {
         shoppingCartPage = addBookFlow(SEARCH_QUERY);
-        //maybe use isbn number instead
         Assert.assertTrue(shoppingCartPage.getBasket().getProductTitles().stream()
                 .anyMatch(title -> title.contains(SEARCH_QUERY)));
-        homePage = removeBookFlow(shoppingCartPage);
+        String ISBN_SHOPPING_CART = shoppingCartPage.getBasket().getIsbn();
+        Assert.assertEquals(ISBN_SHOPPING_CART, ISBN_EXPECTED);
+
     }
 
     @Test(description = "PRPL_SC_02 - Addition and removal of multiple books to the shopping cart.", priority = 2)
@@ -33,7 +35,6 @@ public class CartFunctionalityTest extends BaseTest {
             titles.stream().anyMatch(title -> title.contains(SEARCH_QUERY)));
         Assert.assertTrue(
             titles.stream().anyMatch(title -> title.contains(SEARCH_QUERY_2)));
-        homePage = removeBookFlow(shoppingCartPage);
     }
 
     @Test(description = "PRPL_SC_03 - Increase and decrease the quantity of a book in the shopping cart.", priority = 3)
@@ -48,7 +49,6 @@ public class CartFunctionalityTest extends BaseTest {
 
         String finalQuantity = shoppingCartPage.getBasket().getQuantity();
         Assert.assertEquals(finalQuantity, beforeQuantity);
-        homePage = removeBookFlow(shoppingCartPage);
     }
 
     @Test(description = "PRPL_SC_04 - Verify the subtotal of a book in the shopping cart singular book.", priority = 4)
@@ -74,8 +74,6 @@ public class CartFunctionalityTest extends BaseTest {
 
         long finalSubtotal = SanitizePrice.sanitizePrice(shoppingCartPage.getBasket().getSubtotal());
         Assert.assertEquals(finalSubtotal, price);
-
-        homePage = removeBookFlow(shoppingCartPage);
     }
 
     @Test(description = "PRPL_SC_05 - Verify the subtotal of multiple books in the shopping cart.", priority = 5)
@@ -90,8 +88,6 @@ public class CartFunctionalityTest extends BaseTest {
 
         long subtotal = SanitizePrice.sanitizePrice(shoppingCartPage.getBasket().getSubtotal());
         Assert.assertEquals(subtotal, totalPrice);
-
-        homePage = removeBookFlow(shoppingCartPage);
     }
 
     private ShoppingCartPage addBookFlow(String searchQuery) {
@@ -99,14 +95,8 @@ public class CartFunctionalityTest extends BaseTest {
         searchPage = homePage.getNavbar().clickSearch();
         productPage = searchPage.getProducts().getFirst().getProductPage();
         productPage.getProductDetailComponent().clickAddToCart();
+        ISBN_EXPECTED = productPage.getProductCarouselComponent().getISBN();
         shoppingCartPage = productPage.getNavbar().clickCart();
         return shoppingCartPage;
-    }
-
-    private HomePage removeBookFlow(ShoppingCartPage shoppingCartPage) {
-        shoppingCartPage.getBasket().clearCart();
-        Assert.assertTrue(shoppingCartPage.getEmptyMessage()
-                .contains("Your shopping cart is empty"));
-        return shoppingCartPage.getNavbar().clickHome();
     }
 }

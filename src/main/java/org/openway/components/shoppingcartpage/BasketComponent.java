@@ -18,6 +18,7 @@ public class BasketComponent extends BaseComponent {
     private static final By SUCCESS_MESSAGE = By.cssSelector(".success");
     private static final By EMPTY_CART_MESSAGE = By.xpath("//div[contains(@class, 'content') and contains(text(), 'Your shopping cart is empty')]");
     private static final By QUANTITY_FIELD = By.cssSelector("input.input-number.text-center");
+    private static final By ISBN = By.xpath(".//div[contains(@class, 'row') and (contains(text(), '978') or contains(text(), '979'))]");
     
 
     public BasketComponent(WebElement root, WebDriver driver) {
@@ -97,5 +98,10 @@ public class BasketComponent extends BaseComponent {
     public String getQuantity() {
         WebElement quantityField = findElement(QUANTITY_FIELD);
         return quantityField.getDomProperty("value");
+    }
+
+    public String getIsbn() {
+        WebElement isbnElement = findElement(ISBN);
+        return isbnElement.getText().trim();
     }
 }

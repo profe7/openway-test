@@ -4,7 +4,9 @@ import io.github.cdimascio.dotenv.Dotenv;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openway.pages.*;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 
 public abstract class BaseTest {
@@ -36,11 +38,23 @@ public abstract class BaseTest {
         homePage = accountPage.getNavbar().clickHome();
     }
 
-    //explore aftermethod
     @AfterClass
     public void tearDown() {
         if (driver != null) {
             driver.quit();
         }
     }
+
+    @AfterMethod
+    public void afterMethod() {
+        removeBookFlow(shoppingCartPage);
+    }
+
+    private void removeBookFlow(ShoppingCartPage shoppingCartPage) {
+        shoppingCartPage.getBasket().clearCart();
+        Assert.assertTrue(shoppingCartPage.getEmptyMessage()
+                .contains("Your shopping cart is empty"));
+        homePage = shoppingCartPage.getNavbar().clickHome();
+    }
+
 }
